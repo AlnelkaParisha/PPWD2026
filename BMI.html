@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kalkulator BMI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="kalkulator">
+        <h2>Kalkulator BMI</h2>
+
+        <input type="number" id="berat" placeholder="Masukkan Berat (kg)">
+        <br>
+
+        <input type="number" id="tinggi" placeholder="Masukkan Tinggi (cm)">
+        <br>
+
+        <button onclick="hitungBMI()">Hitung BMI</button>
+        <button onclick="reset()" class="reset">Reset</button>
+
+        <div class="hasil">
+            <span id="hasilBMI">Hasil</span>
+        </div>
+    </div>
+
+    <script>
+        function hitungBMI() {
+            let berat = parseFloat(document.getElementById('berat').value);
+            let tinggi = parseFloat(document.getElementById('tinggi').value);
+
+            if (berat <= 0 || tinggi <= 0 || isNaN(berat) || isNaN(tinggi)) {
+                document.getElementById('hasilBMI').innerHTML =
+                    "Masukkan berat dan tinggi yang valid!";
+                return;
+            }
+
+            // Mengubah tinggi dari cm ke meter
+            let tinggiMeter = tinggi / 100;
+
+            // Menghitung BMI
+            let bmi = berat / (tinggiMeter * tinggiMeter);
+
+            let status;
+
+            // Menentukan status berat badan
+            if (bmi < 18.5) {
+                status = "Kurus";
+            } else if (bmi < 25) {
+                status = "Normal";
+            } else if (bmi < 30) {
+                status = "Gemuk";
+            } else {
+                status = "Obesitas";
+            }
+
+            document.getElementById('hasilBMI').innerHTML =
+                "BMI: " + bmi.toFixed(2) + "<br>" +
+                "Status: " + status;
+        }
+
+        function reset() {
+            document.getElementById('berat').value = "";
+            document.getElementById('tinggi').value = "";
+            document.getElementById('hasilBMI').innerHTML = "Hasil";
+        }
+    </script>
+
+</body>
+</html>

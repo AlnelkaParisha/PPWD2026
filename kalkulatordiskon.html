@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Kalkulator Diskon</title>
+
+```
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 400px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f0f8ff;
+    }
+
+    .kalkulator {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    input {
+        padding: 10px;
+        margin: 5px;
+        font-size: 16px;
+        width: 80%;
+        box-sizing: border-box;
+    }
+
+    button {
+        padding: 10px 15px;
+        margin: 5px;
+        font-size: 16px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #2980b9;
+    }
+
+    .hasil {
+        font-size: 18px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-top: 20px;
+        line-height: 1.8;
+    }
+</style>
+```
+
+</head>
+
+<body>
+
+```
+<div class="kalkulator">
+    <h2>Kalkulator Diskon</h2>
+
+    <input type="number" id="totalBelanja" placeholder="Masukkan Total Belanja">
+    <br>
+
+    <button onclick="hitungDiskon()">Hitung Diskon</button>
+    <button onclick="reset()" style="background:#e74c3c;">Reset</button>
+
+    <div class="hasil">
+        Total Belanja: Rp <span id="belanja">0</span><br>
+        Diskon: Rp <span id="diskon">0</span><br>
+        Total Bayar: Rp <span id="totalBayar">0</span>
+    </div>
+</div>
+
+<script>
+    function hitungDiskon() {
+        let totalBelanja = parseFloat(
+            document.getElementById('totalBelanja').value
+        );
+
+        if (isNaN(totalBelanja) || totalBelanja < 0) {
+            alert('Masukkan total belanja yang valid!');
+            return;
+        }
+
+        let diskon = 0;
+
+        if (totalBelanja > 100000) {
+            diskon = totalBelanja * 0.10;
+        }
+
+        let totalBayar = totalBelanja - diskon;
+
+        document.getElementById('belanja').innerHTML =
+            totalBelanja.toLocaleString('id-ID');
+
+        document.getElementById('diskon').innerHTML =
+            diskon.toLocaleString('id-ID');
+
+        document.getElementById('totalBayar').innerHTML =
+            totalBayar.toLocaleString('id-ID');
+    }
+
+    function reset() {
+        document.getElementById('totalBelanja').value = "";
+        document.getElementById('belanja').innerHTML = "0";
+        document.getElementById('diskon').innerHTML = "0";
+        document.getElementById('totalBayar').innerHTML = "0";
+    }
+</script>
+```
+
+</body>
+</html>
