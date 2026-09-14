@@ -1,190 +1,147 @@
 <?php
 /**
  * index.php
- * Halaman utama — Kedai Kopi Ranting
- * Logika PHP dipisahkan dari tampilan (HTML), styling (CSS), dan perilaku (JS)
+ * -----------------------------------------
+ * Halaman ini bertugas MENAMPILKAN data (READ).
+ * Method yang dipakai di sini: GET (default setiap kali buka URL di browser).
+ *
+ * GET dipakai untuk: mengambil/menampilkan data, tanpa mengubah apapun di database.
+ * Ciri khasnya: data dikirim lewat URL (contoh: index.php?pesan=sukses),
+ * makanya GET tidak cocok untuk data sensitif atau data besar.
  */
 
-// ------------------------------------------------------------
-// 1) Data statis untuk menu (biasanya bisa berasal dari database)
-// ------------------------------------------------------------
-$menu = [
-    ['nama' => 'Kopi Tubruk',        'deskripsi' => 'Kopi robusta lokal, diseduh kasar ala rumahan.', 'harga' => 12000],
-    ['nama' => 'Kopi Susu Gula Aren','deskripsi' => 'Espresso, susu segar, gula aren cair.',            'harga' => 18000],
-    ['nama' => 'Americano',          'deskripsi' => 'Espresso ganda dengan air panas.',                  'harga' => 16000],
-    ['nama' => 'Cappuccino',         'deskripsi' => 'Espresso, susu steam, busa tebal.',                  'harga' => 20000],
-];
+require 'config.php';
 
-// ------------------------------------------------------------
-// 2) Status buka/tutup berdasarkan jam server (contoh logika PHP dinamis)
-// ------------------------------------------------------------
-date_default_timezone_set('Asia/Jakarta');
-$jamSekarang = (int) date('H');
-$buka = ($jamSekarang >= 8 && $jamSekarang < 22);
-$statusText = $buka ? 'Buka sekarang' : 'Tutup sekarang';
+// Mengambil semua data donasi dari database, diurutkan dari yang terbaru
+$stmt = $pdo->query("SELECT * FROM donasi ORDER BY created_at DESC");
+$daftarDonasi = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// ------------------------------------------------------------
-// 3) Proses form kontak/pemesanan (jika dikirim lewat POST)
-// ------------------------------------------------------------
-$errors = [];
-$success = false;
-$old = ['nama' => '', 'email' => '', 'pesan' => ''];
+// Menghitung total donasi terkumpul (untuk ditampilkan di atas)
+$stmtTotal = $pdo->query("SELECT SUM(jumlah) AS total FROM donasi");
+$total = $stmtTotal->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_pesan'])) {
-    $old['nama']  = trim($_POST['nama'] ?? '');
-    $old['email'] = trim($_POST['email'] ?? '');
-    $old['pesan'] = trim($_POST['pesan'] ?? '');
+/**
+ * Contoh pemakaian GET: menangkap parameter dari URL.
+ * Setelah proses_tambah.php atau hapus.php selesai, mereka akan redirect
+ * ke index.php?pesan=sukses, lalu kode di bawah ini membaca parameter itu
+ * untuk menampilkan notifikasi.
+ *
+ * $_GET adalah "superglobal" bawaan PHP yang otomatis berisi semua data
+ * yang dikirim lewat query string URL (bagian setelah tanda '?').
+ */
+$pesan = $_GET['pesan'] ?? null;
 
-    if ($old['nama'] === '') {
-        $errors[] = 'Nama wajib diisi.';
-    }
-    if ($old['email'] === '' || !filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Email tidak valid.';
-    }
-    if ($old['pesan'] === '') {
-        $errors[] = 'Pesan tidak boleh kosong.';
-    }
-
-    if (empty($errors)) {
-        // Di sini biasanya pesan disimpan ke database atau dikirim via email.
-        // Untuk contoh sederhana ini, kita cukup tandai sebagai berhasil.
-        $success = true;
-        $old = ['nama' => '', 'email' => '', 'pesan' => ''];
-    }
+/**
+ * Fungsi bantu untuk memformat angka jadi format Rupiah.
+ * number_format() adalah fungsi bawaan PHP untuk memformat angka.
+ */
+function formatRupiah($angka) {
+    return "Rp " . number_format($angka, 0, ',', '.');
 }
-
-$tahun = date('Y');
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kedai Kopi Ranting</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <title>Sistem Donasi Sederhana</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-<header class="site-header">
-    <div class="container header-inner">
-        <a href="#beranda" class="logo">Ranting<span>.</span></a>
-        <nav class="nav" id="navMenu">
-            <a href="#menu">Menu</a>
-            <a href="#tentang">Tentang</a>
-            <a href="#kontak">Kontak</a>
-        </nav>
-        <button class="nav-toggle" id="navToggle" aria-label="Buka menu navigasi" aria-expanded="false">
-            <span></span><span></span><span></span>
-        </button>
-    </div>
-</header>
+    <div class="container">
+        <h1>💝 Donasi Sederhana</h1>
 
-<main>
-    <!-- HERO -->
-    <section id="beranda" class="hero">
-        <div class="container hero-inner">
-            <div class="hero-text">
-                <p class="hero-status <?= $buka ? 'is-open' : 'is-closed' ?>">
-                    <span class="status-dot"></span> <?= htmlspecialchars($statusText) ?>
-                </p>
-                <h1>Secangkir kopi,<br>sepenggal jeda.</h1>
-                <p class="hero-lede">
-                    Kedai kecil di pinggir jalan yang menyeduh kopi robusta dan arabika
-                    lokal setiap pagi. Tidak ada yang tergesa di sini.
-                </p>
-                <a href="#menu" class="btn btn-primary">Lihat menu</a>
-            </div>
-            <div class="hero-art" aria-hidden="true">
-                <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="160" cy="160" r="150" fill="none" stroke="var(--gold)" stroke-width="1.5" opacity="0.5"/>
-                    <circle cx="160" cy="160" r="115" fill="none" stroke="var(--gold)" stroke-width="1.5" opacity="0.35"/>
-                    <circle cx="160" cy="160" r="80"  fill="var(--espresso)" opacity="0.9"/>
-                    <path d="M120 140 q40 -30 80 0" stroke="var(--cream)" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.7"/>
-                </svg>
-            </div>
+        <div class="total-card">
+            <p>Total Donasi Terkumpul</p>
+            <h2><?= formatRupiah($total) ?></h2>
+            <span><?= count($daftarDonasi) ?> donatur</span>
         </div>
-    </section>
 
-    <!-- MENU -->
-    <section id="menu" class="menu">
-        <div class="container">
-            <h2>Menu hari ini</h2>
-            <ul class="menu-list">
-                <?php foreach ($menu as $item): ?>
-                <li class="menu-item">
-                    <div class="menu-item-head">
-                        <span class="menu-item-name"><?= htmlspecialchars($item['nama']) ?></span>
-                        <span class="menu-item-dots" aria-hidden="true"></span>
-                        <span class="menu-item-price">Rp <?= number_format($item['harga'], 0, ',', '.') ?></span>
-                    </div>
-                    <p class="menu-item-desc"><?= htmlspecialchars($item['deskripsi']) ?></p>
-                </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    </section>
+        <?php if ($pesan === 'sukses_tambah'): ?>
+            <div class="alert alert-sukses">✅ Donasi berhasil ditambahkan. Terima kasih!</div>
+        <?php elseif ($pesan === 'sukses_hapus'): ?>
+            <div class="alert alert-sukses">🗑️ Data donasi berhasil dihapus.</div>
+        <?php elseif ($pesan === 'gagal'): ?>
+            <div class="alert alert-gagal">❌ Terjadi kesalahan. Coba lagi.</div>
+        <?php endif; ?>
 
-    <!-- TENTANG -->
-    <section id="tentang" class="tentang">
-        <div class="container tentang-inner">
-            <h2>Tentang Ranting</h2>
-            <p>
-                Ranting dimulai tahun 2019 dari garasi rumah yang diubah jadi tempat
-                nongkrong tiga meja. Kami memilih biji kopi langsung dari petani di
-                Gayo dan Kintamani, lalu menyangrai dalam jumlah kecil setiap minggu
-                supaya rasanya tetap segar.
-            </p>
-        </div>
-    </section>
+        <div class="form-card">
+            <h3>Form Donasi</h3>
 
-    <!-- KONTAK -->
-    <section id="kontak" class="kontak">
-        <div class="container kontak-inner">
-            <div class="kontak-info">
-                <h2>Kirim pesan</h2>
-                <p>Ada pertanyaan soal pemesanan dalam jumlah besar atau kerja sama? Tulis di sini.</p>
-                <ul class="kontak-detail">
-                    <li>Jl. Kenanga No. 12, Pontianak</li>
-                    <li>buka@rantingkopi.example</li>
-                    <li>Setiap hari, 08.00–22.00</li>
-                </ul>
-            </div>
+            <!--
+                method="POST" dipakai di sini karena kita MENGIRIM data baru
+                yang akan MENGUBAH isi database (insert data baru).
+                POST menyembunyikan data dari URL (lebih cocok untuk input form),
+                dan tidak ada batas ukuran data seperti GET.
 
-            <form class="kontak-form" method="post" action="#kontak" novalidate>
-                <?php if ($success): ?>
-                    <p class="form-alert form-alert-success">Terima kasih, pesan Anda sudah terkirim.</p>
-                <?php elseif (!empty($errors)): ?>
-                    <p class="form-alert form-alert-error">
-                        <?php foreach ($errors as $err): ?>
-                            <?= htmlspecialchars($err) ?><br>
-                        <?php endforeach; ?>
-                    </p>
-                <?php endif; ?>
+                action="proses_tambah.php" artinya form ini akan diproses
+                oleh file proses_tambah.php, bukan diproses di halaman ini.
+            -->
+            <form action="proses_tambah.php" method="POST" id="formDonasi">
+                <div class="form-group">
+                    <label for="nama">Nama Donatur</label>
+                    <input type="text" id="nama" name="nama" placeholder="Masukkan nama" required>
+                </div>
 
-                <label for="nama">Nama</label>
-                <input type="text" id="nama" name="nama" value="<?= htmlspecialchars($old['nama']) ?>">
+                <div class="form-group">
+                    <label for="jumlah">Jumlah Donasi (Rp)</label>
+                    <input type="number" id="jumlah" name="jumlah" placeholder="Contoh: 50000" min="1000" required>
+                    <!-- Elemen ini akan diisi otomatis oleh JS untuk preview format Rupiah -->
+                    <small id="previewRupiah" class="preview"></small>
+                </div>
 
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="<?= htmlspecialchars($old['email']) ?>">
-
-                <label for="pesan">Pesan</label>
-                <textarea id="pesan" name="pesan" rows="4"><?= htmlspecialchars($old['pesan']) ?></textarea>
-
-                <button type="submit" name="kirim_pesan" class="btn btn-primary">Kirim pesan</button>
+                <button type="submit" class="btn-submit">Kirim Donasi</button>
             </form>
         </div>
-    </section>
-</main>
 
-<footer class="site-footer">
-    <div class="container footer-inner">
-        <p>&copy; <?= $tahun ?> Kedai Kopi Ranting.</p>
-        <button id="backToTop" class="back-to-top" aria-label="Kembali ke atas">↑</button>
+        <div class="list-card">
+            <h3>Daftar Donatur</h3>
+
+            <?php if (empty($daftarDonasi)): ?>
+                <p class="kosong">Belum ada donasi masuk.</p>
+            <?php else: ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Jumlah</th>
+                            <th>Waktu</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($daftarDonasi as $donasi): ?>
+                            <tr>
+                                <!--
+                                    htmlspecialchars() WAJIB dipakai setiap menampilkan
+                                    data dari database/user ke HTML. Fungsinya mengubah
+                                    karakter berbahaya (misal <script>) jadi teks biasa,
+                                    supaya mencegah serangan XSS (Cross-Site Scripting).
+                                -->
+                                <td><?= htmlspecialchars($donasi['nama']) ?></td>
+                                <td><?= formatRupiah($donasi['jumlah']) ?></td>
+                                <td><?= date('d M Y, H:i', strtotime($donasi['created_at'])) ?></td>
+                                <td>
+                                    <!--
+                                        Link hapus ini pakai GET (lewat URL: hapus.php?id=3)
+                                        karena cuma mengirim satu nilai kecil (id) dan
+                                        bukan data form yang kompleks. Konfirmasi dulu
+                                        pakai JavaScript (onclick) sebelum benar-benar hapus.
+                                    -->
+                                    <a href="hapus.php?id=<?= $donasi['id'] ?>"
+                                       class="btn-hapus"
+                                       onclick="return konfirmasiHapus('<?= htmlspecialchars($donasi['nama']) ?>')">
+                                        Hapus
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
     </div>
-</footer>
 
-<script src="js/script.js"></script>
+    <script src="/js/script.js"></script>
 </body>
 </html>

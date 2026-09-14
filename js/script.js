@@ -1,53 +1,72 @@
-// ==========================================================
-// Kedai Kopi Ranting — script.js
-// ==========================================================
+/**
+ * script.js - JavaScript dasar (client-side, jalan di browser)
+ * -----------------------------------------
+ * File ini TIDAK berhubungan dengan PHP/database sama sekali.
+ * PHP jalan di SERVER (sebelum halaman dikirim ke browser),
+ * sedangkan file ini jalan di BROWSER pengguna, SETELAH halaman termuat.
+ */
 
-document.addEventListener('DOMContentLoaded', function () {
+// Mengambil elemen input jumlah dan elemen kecil untuk preview
+const inputJumlah = document.getElementById('jumlah');
+const previewRupiah = document.getElementById('previewRupiah');
 
-  // ---- Menu navigasi mobile (hamburger) ----
-  var navToggle = document.getElementById('navToggle');
-  var navMenu = document.getElementById('navMenu');
+/**
+ * Fungsi untuk memformat angka menjadi format Rupiah, contoh: 50000 -> "Rp 50.000"
+ * Ini VERSI JAVASCRIPT dari fungsi formatRupiah() yang ada di index.php.
+ * Keduanya sengaja dibuat terpisah karena PHP jalan di server (format untuk
+ * data yang SUDAH tersimpan), sedangkan JS ini jalan di browser (format
+ * angka SAAT user sedang mengetik, sebelum data dikirim).
+ */
+function formatRupiahJS(angka) {
+    return 'Rp ' + Number(angka).toLocaleString('id-ID');
+}
 
-  if (navToggle && navMenu) {
-    navToggle.addEventListener('click', function () {
-      var isOpen = navMenu.classList.toggle('is-open');
-      navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+/**
+ * 'input' event: kode di dalamnya akan dijalankan browser SETIAP KALI
+ * user mengetik/mengubah isi field jumlah (real-time, tanpa perlu submit).
+ */
+if (inputJumlah) {
+    inputJumlah.addEventListener('input', function () {
+        const nilai = this.value;
+
+        if (nilai && nilai > 0) {
+            previewRupiah.textContent = formatRupiahJS(nilai);
+        } else {
+            previewRupiah.textContent = '';
+        }
     });
+}
 
-    // Tutup menu saat salah satu link diklik (khusus tampilan mobile)
-    navMenu.querySelectorAll('a').forEach(function (link) {
-      link.addEventListener('click', function () {
-        navMenu.classList.remove('is-open');
-        navToggle.setAttribute('aria-expanded', 'false');
-      });
+/**
+ * Fungsi konfirmasi sebelum menghapus data.
+ * Dipanggil dari atribut onclick="return konfirmasiHapus(...)" di index.php.
+ *
+ * confirm() adalah fungsi bawaan browser yang menampilkan dialog Ya/Batal.
+ * Fungsi ini HARUS return true/false:
+ * - true  -> browser lanjut mengikuti link <a href="hapus.php?id=...">
+ * - false -> browser MEMBATALKAN aksi klik link tersebut
+ */
+function konfirmasiHapus(nama) {
+    return confirm('Yakin ingin menghapus donasi dari "' + nama + '"?');
+}
+
+/**
+ * Validasi tambahan di sisi client sebelum form dikirim (submit).
+ * Ini LAPISAN PERTAMA validasi (untuk UX, respons cepat tanpa reload halaman).
+ * Validasi di server (proses_tambah.php) tetap WAJIB ada sebagai lapisan
+ * kedua/utama, karena validasi JS ini bisa dilewati (browser aneh-aneh,
+ * JS dimatikan, dsb).
+ */
+const form = document.getElementById('formDonasi');
+
+if (form) {
+    form.addEventListener('submit', function (event) {
+        const nama = document.getElementById('nama').value.trim();
+        const jumlah = document.getElementById('jumlah').value;
+
+        if (nama === '' || jumlah === '' || jumlah < 1000) {
+            event.preventDefault(); // Membatalkan submit form (tidak jadi dikirim ke server)
+            alert('Mohon isi nama dan jumlah donasi minimal Rp 1.000');
+        }
     });
-  }
-
-  // ---- Tombol kembali ke atas ----
-  var backToTop = document.getElementById('backToTop');
-  if (backToTop) {
-    backToTop.addEventListener('click', function () {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  }
-
-  // ---- Validasi ringan di sisi klien untuk form kontak ----
-  var kontakForm = document.querySelector('.kontak-form');
-  if (kontakForm) {
-    kontakForm.addEventListener('submit', function (event) {
-      var nama = kontakForm.querySelector('#nama');
-      var email = kontakForm.querySelector('#email');
-      var pesan = kontakForm.querySelector('#pesan');
-
-      var kosong = [nama, email, pesan].some(function (field) {
-        return field && field.value.trim() === '';
-      });
-
-      if (kosong) {
-        event.preventDefault();
-        alert('Mohon lengkapi semua kolom sebelum mengirim pesan.');
-      }
-    });
-  }
-
-});
+}
