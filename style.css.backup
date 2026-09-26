@@ -1,0 +1,175 @@
+/*impor font dari google*/
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&display=swap');
+
+/* ===== Pengaturan Dasar ===== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.6;
+    color: #5f3b52;
+    background-color: #fff5fa;
+}
+
+/* ===== Header ===== */
+
+.header {
+    background: linear-gradient(135deg, #f8b6d2, #e889b0);
+    color: #ffffff;
+    text-align: center;
+    padding: 40px 20px;
+}
+.header h1 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 42px;
+    margin-bottom: 8px;
+}
+.header p {
+    font-size: 16px;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.hello {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 8px 0;
+    letter-spacing: 1px;
+}
+
+.foto-profil {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 5px auto 0;
+}
+
+/* ===== Navigasi ===== */
+
+.nav {
+    background-color: #ffffff;
+    text-align: center;
+    padding: 12px;
+}
+
+.nav a {
+    color: #b85c82;
+    text-decoration: none;
+    margin: 0 16px;
+    font-weight: bold;
+}
+
+.nav a:hover {
+    color: #d96b98;
+}
+
+/* ===== Konten ===== */
+
+.konten {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.konten section {
+    background-color: #ffe4ef;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(184, 92, 130, 0.08);
+}
+
+.konten h2 {
+    color: #b85c82;
+    border-bottom: 3px solid #f3b6cc;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+}
+
+.konten p {
+    margin-bottom: 12px;
+}
+
+/* ===== Tabel ===== */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 1px solid #f0c8d8;
+    padding: 10px 14px;
+    text-align: left;
+}
+
+th {
+    background-color: #d98aaa;
+    color: #ffffff;
+}
+
+tr:nth-child(even) {
+    background-color: #fff8fb;
+}
+
+tr:hover {
+    background-color: #fce1ec;
+    transform: scale(1.02);
+}
+
+/* ===== Formulir ===== */
+
+form label {
+    display: block;
+    font-weight: bold;
+    margin: 12px 0 4px;
+}
+
+form input,
+form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #f1cad9;
+    border-radius: 8px;
+    font-family: inherit;
+    background-color: #fffafd;
+}
+
+form input:focus,
+form textarea:focus {
+    outline: none;
+    border-color: #d98aaa;
+}
+
+form button {
+    margin-top: 16px;
+    background-color: #d98aaa;
+    color: #ffffff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+form button:hover {
+    background-color: #c9799c;
+    transform: scale(1.05);
+}
+
+/* ===== Footer ===== */
+
+.footer {
+    background-color: #d98aaa;
+    color: #ffffff;
+    text-align: center;
+    padding: 20px;
+}
